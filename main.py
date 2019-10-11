@@ -45,25 +45,41 @@ def get_common_date(dataframes: dict) -> list:
     return common_date
 
 
-def main():
-    files = ['bitcoin_price', 'ethereum_price', 'litecoin_price', 'dash_price']
-    legends = ['Bitcoin', 'Ethereum', 'Litecoin', 'Dash']
+def plot_data(dataframes: dict, common_min: str=None, common_max: str=None) -> None:
+    '''Plots the DataFrames data from a dict
 
-    dataframes = parse_csv(files)
+    Parameters:
+        dataframes: dict
+        The DataFrames to be plotted
+
+        common_min: str
+        Timestamp object from where to start plotting data
+        Optional -> Defaults to: None
+
+        common_max: str
+        Timestamp object from where to end plotting data
+        Optional -> Defaults to: None
+    '''
     # zipping all min and max into two different tuples
     common_date = list(zip(*get_common_date(dataframes)))
-    # unpacking values
-    common_min, common_max = max(common_date[0]), min(common_date[1])
+
+    if not common_min:
+        common_min = max(common_date[0])
+
+    if not common_max:
+        common_max = min(common_date[1])
 
     # plotting the dataframes
     for crypto, legend in zip(files, legends):
         dataframes[crypto].sort_index(inplace=True)
         dataframes[crypto] = dataframes[crypto][common_min:common_max]
 
-        dataframes[crypto]['Open'].dropna().plot(label=legend)
+        dataframes[crypto]['Open'].plot(label=legend, linewidth=1)
     
     # some matplotlib configs
-    plt.title('Abertura (por dia) de criptomoedas em dólares')
+    plt.style.use('seaborn-colorblind')
+
+    plt.title('Abertura de criptomoedas em dólares ao longo dos anos')
     plt.xlabel('Anos')
     plt.ylabel('USD')
     plt.legend()
@@ -71,6 +87,15 @@ def main():
     plt.grid(True)
     plt.tight_layout()
     plt.show()
+
+
+def main():
+    global files, legends
+    files = ['bitcoin_price', 'ethereum_price', 'litecoin_price', 'dash_price']
+    legends = ['Bitcoin', 'Ethereum', 'Litecoin', 'Dash']
+
+    dataframes = parse_csv(files)
+    plot_data(dataframes)
 
 
 if __name__ == '__main__':
